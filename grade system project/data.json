@@ -1,0 +1,14 @@
+{
+    "1234": {
+        "name": "Asher",
+        "course(s)": {
+            "MATH": [
+                79
+            ],
+            "PHYSICS": [
+                99
+            ]
+        },
+        "status": ""
+    }
+}
