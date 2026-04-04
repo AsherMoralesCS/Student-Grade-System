@@ -1,14 +1,23 @@
 {
-    "1234": {
-        "name": "Asher",
-        "course(s)": {
-            "MATH": [
-                79
-            ],
-            "PHYSICS": [
-                99
-            ]
-        },
-        "status": ""
+    "ADMIN": {
+        "1111": {
+            "name": "ADMIN",
+            "password": "ADMIN1234"
+        }
+    },
+
+    "student(s)": {
+        "1234": {
+            "name": "Asher",
+            "course(s)": {
+                "MATH": [
+                    79
+                ],
+                "PHYSICS": [
+                    99
+                ]
+            },
+            "status": ""
+        }
     }
 }
