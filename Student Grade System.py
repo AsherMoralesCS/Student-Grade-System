@@ -1,4 +1,4 @@
-__version__ = "v0.1"
+__version__ = "v0.1.2"
 __author__ = "Asher Morales"
 
 import json
@@ -98,11 +98,12 @@ def verify_user(data):
     """Handles ID checking and a user verification system"""
     check_attempts = 3
     while check_attempts != 0:
-        id_handler = input("Enter student ID or 'BACK' to go back: ")
+        id_handler = input("Enter student ID or 'BACK' to go back: ").upper().strip()
 
         if id_handler == "BACK":
             break
         if id_handler in data["student(s)"]:  # Checks if id is in data.json
+
             username_handler = input("Please input username: ")
 
             if username_handler != data["student(s)"][id_handler]["name"]:
@@ -125,7 +126,7 @@ def verify_user(data):
                 check_attempts -= 1
                 print(f"Invalid input. {check_attempts} attempts left")
     print("Max attempt reached, try again later.")
-    return False, id_handler, username_handler
+    return False, None, None
 
 
 
@@ -165,22 +166,43 @@ def new_course(data):
         if not is_valid:
             break
         
-        add_course = input("Name for new course: ")
+        course_exists = input("Name for new course: ")
 
-        if add_course in data[student_id][student_username]["course(s)"]:
+        if course_exists in data["student(s)"][student_id]["course(s)"]:
             print("Course already exists!")
             continue
 
-        elif add_course not in data[student_id][student_username]["course(s)"]:
-            data[student_id][student_username]["course(s)"][add_course] = []
+        elif course_exists not in data["student(s)"][student_id]["course(s)"]:
+            data["student(s)"][student_id]["course(s)"][course_exists] = []
             continue
 
 
 
 def new_grade(data):
-    pass
+    """Handles adding new grades to existing student"""
+    while True:
+        is_valid, student_id, student_username = verify_user(data)
+        if not is_valid:
+            break
+        
+        course_exists = input("Enter course name: ")
 
-
+        if course_exists in data["student(s)"][student_id]["course(s)"]:
+            print(f"You're about to modify the grade for {course_exists}.\nContinue? Y/N: ")
+            if input().upper().strip() == "Y":
+                try:
+                    new_grade = int(input(f"Enter new grade for {course_exists}: "))
+                except:
+                    print("Invalid input")
+                else:
+                    data["student(s)"][student_id]["course(s)"][course_exists] = [new_grade]
+                    continue
+            elif input().upper().strip() == "N":
+                continue
+        
+        else:
+            print(f"{course_exists} does not exist")
+            continue
 
 with open("data.json", "r") as file:
     data = json.load(file)
