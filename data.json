@@ -10,7 +10,19 @@
             "name": "Asher",
             "course(s)": {
                 "MATH": [
-                    79
+                    100
+                ],
+                "PHYSICS": [
+                    100
+                ]
+            },
+            "status": "passed"
+        },
+        "2345": {
+            "name": "Raymond",
+            "course(s)": {
+                "MATH": [
+                    99
                 ],
                 "PHYSICS": [
                     99
