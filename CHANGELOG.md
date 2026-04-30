@@ -1,6 +1,6 @@
 
 ===================AUTHOR INFORMATION===================
-    Student Grade System v0.2.2
+    Student Grade System v1.0.0
     Name: Asher Morales
     Age: 18yrs old
     School: University of Antique
@@ -10,12 +10,12 @@
 
 =========================PROJECT STATUS=========================
     Title: Student Grade System
-    Version: 0.2.2
+    Version: 1.0.0
     Date Started: April 4, 2026
     Target Date of Completion (Initial): April 20, 2026
     Target Date of Completion Revised: April 30, 2026
-    Date Completed: TBD
-    Current Date: April 26, 2026
+    Date Completed: April 30, 2026
+    Current Date: April 28, 2026
 
     Objective(s) as of:
         v0.1.1
@@ -38,6 +38,10 @@
         -> Add 'DELETE' function
         -> Integrate SQL database
 
+        v1.0.0
+        -> Integrate SQL database
+        -> Add GUI using tkinter
+
     Task Completion Update:
         v0.2.1
         -> All functions but 'DELETE' implemented
@@ -45,6 +49,10 @@
 
         v0.2.2
         -> Started using classes to clean up code especially indexing multiple levels of a dictionary
+        -> Started fixing bugs
+
+        v1.0.0
+        -> First polished and working version
 
     To Be Added:
     -> DELETE function to delete records, courses, or grades

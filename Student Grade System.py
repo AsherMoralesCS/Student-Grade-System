@@ -1,4 +1,4 @@
-__version__ = "v0.2.2"
+__version__ = "v1.0.0"
 __author__ = "Asher Morales"
 
 import json
@@ -18,51 +18,62 @@ def storage():
 
 
 class Access:
+    """Define access points and access endpoints in dictionaries to be used"""
     def __init__(self, data):
         self.data = data
         self.id = next(iter(data["ADMIN"]))
-        self.user_id = data["student(s)"]
+        self.user_id = list(data["student(s)"])
 
-    def administrator_id(admin):
+    def administrator_id(admin) -> str:
+        """Returns Admin ID to check if it exists and to use in all Admin related methods"""
         return admin.id
 
-    def administrator_name(admin):
+    def administrator_name(admin) -> str:
+        """Returns the name of Administrator"""
         return admin.data["ADMIN"][admin.id]["name"]
     
-    def administrator_password(admin):
+    def administrator_password(admin) -> str:
+        """Returns the password of Administrator"""
         return admin.data["ADMIN"][admin.id]["password"]
 
-    def student_id(student):
-        return student.user_id
+    def students_data(student) -> dict:
+        """Returns top level keys of the higher key 'student(s)'"""
+        return student.data["student(s)"]
 
-    def student_name(student):
-        return student.data["student(s)"][student.id]["name"]
+    def student_path(student, input) -> dict:
+        """Returns the path of student with the corresponding\n
+        id input to use in student_courses which is\n
+        access.student_path(input)['course(s)']"""
+        return student.data["student(s)"][input]
 
-    def student_password(student):
-        return student.data["student(s)"][student.id]["password"]
+    def student_name(student, input) -> str:
+        """Returns the name of student in input"""
+        return student.data["student(s)"][input]["name"]
 
-    def student_courses(self):
-        student = Access()
-        course_list = [course for course in student.student_name["course(s)"]]
-        return course_list
-    
-    def student_grade(self):
-        student = Access()
-        grade_list = [grades for course in student.student_courses for grades in course]
-        return grade_list
+    def student_password(student, input) -> str:
+        """Returns the password of student"""
+        return student.data["student(s)"][input]["password"]
+
+    def student_course_path(student, input) -> str:
+        """Simply returns the path for the course of said student"""
+        return student.data["student(s)"][input]["course(s)"]
+
+    def student_course_and_grades(access, input) -> dict:
+        """Returns the list of courses and grades for a student """
+        return list(access.student_path(input)["course(s)"].items())
 
 
 class Menu:
     def __init__(self, data):
         self.data = data
-        self.new = DataManager()
+        self.new = DataManager(data)
         self.verify = Verifier()
         self.view = View()
 
 
     def main(self):
         """main() handles user input and is the primary landing page"""
-        is_valid, admin_id, admin_username = self.verify.administrator(self.data)
+        is_valid, _, admin_username = self.verify.administrator()
 
         if not is_valid:
             print("Admin verification failed, goobye")
@@ -109,8 +120,7 @@ class Menu:
 
 class Verifier():
     def __init__(self):
-        self.new = DataManager()
-        self.access = Access()
+        self.access = Access(data)
 
 
     def administrator(self):
@@ -122,7 +132,7 @@ class Verifier():
             if admin_id == "BACK":
                 break
 
-            if admin_id in self.access.administrator_id():  # Checks if id is in data.json
+            if admin_id == self.access.administrator_id():  # Checks if id is in data.json
                 admin_username = input("Please input administrator username: ")
 
                 if admin_username !=  self.access.administrator_name():
@@ -145,7 +155,7 @@ class Verifier():
 
     def user(self):
         """Handles ID checking and a user verification system"""
-        record_creator = self.new.record(self)
+        new = DataManager(data)
 
         check_attempts = 3
         while check_attempts != 0:
@@ -153,21 +163,21 @@ class Verifier():
 
             if id_handler == "BACK":
                 return False, None, None
-            if id_handler in self.access.student_id:  # Checks if id is in data.json
+            if id_handler in self.access.students_data():  # Checks if id is in data.json
                 username_handler = input("Please input username: ")
 
-                if username_handler != self.access.student_name:
+                if username_handler != self.access.student_name(id_handler):
                     check_attempts -= 1
                     print(f"User does not exist. {check_attempts} attempts left")
                     continue
-                elif username_handler == self.access.student_name:
+                elif username_handler == self.access.student_name(id_handler):
                     return True, id_handler, username_handler
 
-            if id_handler not in self.access.student_id:  # Runs if id is NOT in data.json
+            if id_handler not in self.access.students_data():  # Runs if id is NOT in data.json
                 nousername_handler = input("User does not exist, would you like to create a new user? Y/N: ").upper().strip()
 
                 if nousername_handler == "Y":
-                    self.new.student_record()
+                    new.student_record()
                 elif nousername_handler == "N":
                     check_attempts -= 1
                     print(f"User does not exist. {check_attempts} attempts left")
@@ -182,27 +192,29 @@ class Verifier():
 
 
 class DataManager:
-    def __init__(self, data, verifier):
+    def __init__(self, data):
+        self.verify = None
         self.data = data
-        self.verify = Verifier()
+        self.access = Access(data)
 
 
     def student_record(self):
         """Handles new record creation for new students"""
         check_attempts = 3
+
         while check_attempts != 0:
             new_id = input("Enter new user ID or 'BACK' to go back: ").upper().strip()
 
             if new_id == "BACK":
                 break
 
-            if new_id in self.data:
+            if new_id in self.access.students_data():
                 check_attempts -= 1
                 print(f"ID already exists. {check_attempts} attempts left")
                 continue
-            elif new_id not in self.data:
+            elif new_id not in self.access.students_data():
                 new_id_name = input("Enter new ID name: ")
-                self.data.update({new_id: {
+                self.access.students_data().update({new_id: {
                     "name": new_id_name,
                     "course(s)": {},
                     "status": ""}})
@@ -217,21 +229,23 @@ class DataManager:
 
     def student_course(self):
         """Handles adding new courses to existing student records"""
-        is_valid, student_id, student_username = self.verify.user(self.data)
+        verify= Verifier()
+        is_valid, student_id, _ = verify.user()
         while True:
             if not is_valid:
                 break
 
-            course_exists = input("Name for new course or 'BACK' to go back: ").upper().strip()
+            course = input("Name for new course or 'BACK' to go back: ").upper().strip()
 
-            if course_exists == "BACK":
+            if course == "BACK":
                 return
-            if course_exists in self.data["student(s)"][student_id]["course(s)"]:
+            if course in self.access.student_course_path(student_id):
                 check_attempts -= 1
                 print(f"Course already exists! {check_attempts} attempts left")
                 continue
-            elif course_exists not in self.data["student(s)"][student_id]["course(s)"]:
-                self.data["student(s)"][student_id]["course(s)"][course_exists] = []
+            elif course not in self.access.student_course_path(student_id):
+                self.access.student_course_path(student_id)[course] = []
+                print(f"Course {course} added!")
                 continue
         return
 
@@ -239,29 +253,30 @@ class DataManager:
 
     def student_grade(self):
         """Handles adding new grades to existing student"""
-        is_valid, student_id, student_username = self.verify.user(self.data)
+        verify = Verifier()
+        is_valid, student_id, _ = verify.user()
         while True:
             if not is_valid:
                 break
 
-            course_exists = input("Enter course name or 'BACK' to go back: ").upper().strip()
+            course = input("Enter course name or 'BACK' to go back: ").upper().strip()
 
-            if course_exists == "BACK":
+            if course == "BACK":
                 return
-            if course_exists in self.data["student(s)"][student_id]["course(s)"]:
-                print(f"You're about to modify the grade for {course_exists}.\nContinue? Y/N: ")
+            if course in self.access.student_course_path(student_id):
+                print(f"You're about to modify the grade for {course}.\nContinue? Y/N: ")
                 if input().upper().strip() == "Y":
                     try:
-                        grade = int(input(f"Enter new grade for {course_exists}: "))
+                        grade = int(input(f"Enter new grade for {course}: "))
                     except:
                         print("Invalid input")
                     else:
-                        self.data["student(s)"][student_id]["course(s)"][course_exists] = [grade]
+                        self.access.student_course_path(student_id)[course] = [grade]
                         continue
                 elif input().upper().strip() == "N":
                     continue
             else:
-                print(f"{course_exists} does not exist")
+                print(f"{course} does not exist")
                 continue
         return
 
@@ -270,23 +285,21 @@ class View():
     def __init__(self):
         self.data = data
         self.verify = Verifier()
+        self.access = Access(data)
 
     def student_grades(self):
-        is_valid, student_id, student_username = self.verify.user(self.data)
+        is_valid, student_id, student_username = self.verify.user()
 
         while True:
             if not is_valid:
                 print("ID not valid")
                 return
-            
-            print(f"{student_id}{student_username}: \n"
-                f"Courses{" " * 10}| Grades")
-            for courses in self.data["student(s)"][student_id]["course(s)"]:
-                for grades in self.data["student(s)"][student_id]["course(s)"][courses]:
-                    print(f"{courses}{" " * (10 + len("courses") - len(courses))}| {grades}")
+
+            print(f"Course list for {student_username}")
+            for courses, grades in self.access.student_course_and_grades(student_id):
+                print(f"Course: {courses} | Grades: {grades}")
             break
         return
-
 
 
     def average_grade(self):
@@ -303,8 +316,8 @@ class View():
         return
 
 
-index = Menu()
 # Call
 with open("data.json", "r") as file:
     data = json.load(file)
+index = Menu(data)
 index.main()
